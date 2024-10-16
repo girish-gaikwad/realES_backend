@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+.card-container {
+    display: grid; /* Use grid layout */
+    grid-template-columns: repeat(2, 1fr); /* Two equal columns */
+    overflow-y: auto; /* Enables vertical scrolling */
+    max-height: 62vh; /* Set a maximum height (80% of the viewport height) */
+    gap: 15px; /* Space between the cards */
+    /* background-color: #f0f0f0; Background color for visibility */
+    /* Hide the scrollbar */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    overflow-x: hidden; /* Hide the horizontal scrollbar */
+}
+/* Each individual card */
+.card {
+    min-height: 235px; /* Minimum height for the cards */
+    background-color: #ffffff; /* Card background color */
+    color: white; /* Card text color */
+    display: flex;
+    align-items: center; /* Center content vertically */
+    justify-content: center; /* Center content horizontally */
+    border-radius: 6px; /* Rounded corners */
+}
+.hideScroll {
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    overflow-x: hidden; /* Hide the horizontal scrollbar */
+}
+
+
+
