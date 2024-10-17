@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import usePopupStore from "../../../zustand/popupStore";
 
 const Utilities = () => {
-  const { cards, selectedCard, SelectedutilitiesList } = usePopupStore();
+  const { cards, selectedCard, SelectedutilitiesList,setIsModalOpen } = usePopupStore();
 
   // Find the index of the selected card
   const index = cards.findIndex((item) => item.id === selectedCard);
@@ -64,8 +64,9 @@ const Utilities = () => {
         utilities: utilitiesWithDetails,
       });
     }
+    setIsModalOpen(false);
 
-    console.log("SelectedutilitiesList", SelectedutilitiesList);
+      // console.log("SelectedutilitiesList", SelectedutilitiesList);
   };
 
   return (

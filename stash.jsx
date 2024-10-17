@@ -479,6 +479,377 @@ import {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+  import React, { useEffect, useState } from "react";
+  import usePopupStore from "../../../zustand/popupStore";
+  
+  function Discount() {
+    const {
+      cards,
+      selectedCard,
+      SelectedamenitiesList,
+      SelectedutilitiesList,
+      updateDiscount,
+      updateDiscountType,
+      setAmenitiesDiscount,
+      setGobalDiscount,
+      gobalDiscount,
+    } = usePopupStore();
+  
+    const index = cards.findIndex((item) => item.id === selectedCard);
+  
+    // For amenities
+    const selectedAmenitiesids = SelectedamenitiesList[0]?.amenities;
+    const fullAmenitiesDetails = cards[index]?.estate?.owner_amenities?.filter(
+      (amenity) =>
+        selectedAmenitiesids?.some(
+          (selectedAmenity) => selectedAmenity?.id === amenity?.id
+        )
+    );
+  
+    // For utilities
+    const selectedUtilitiesids = SelectedutilitiesList?.[0]?.utilities || [];
+    const fullUtilitiesDetails = cards[index]?.estate?.owner_utilities?.filter(
+      (utility) =>
+        selectedUtilitiesids?.some(
+          (selectedUtility) => selectedUtility?.id === utility?.id
+        )
+    );
+  
+    const [totalPriceWithOutDiscount, setTotalPriceWithOutDiscount] = useState(0);
+    const calculateTotalPrice = () => {
+      let total = 0;
+      const estatePrice = cards[index]?.estate?.avg_price;
+      const amenitiesPrice = fullAmenitiesDetails?.reduce(
+        (acc, curr) => acc + curr?.price,
+        0
+      ) || 0;
+      const utilitiesPrice = fullUtilitiesDetails?.reduce(
+        (acc, curr) => acc + curr?.price,
+        0
+      ) || 0;
+  
+      total = estatePrice + amenitiesPrice + utilitiesPrice;
+      setTotalPriceWithOutDiscount(total);
+    };
+  
+    useEffect(() => {
+      calculateTotalPrice();
+    }, []);
+  
+    const [discounts, setDiscounts] = useState({
+      estateDiscount: { value: "", type: "AED" },
+      amenitiesDiscounts: {},
+      utilitiesDiscounts: {},
+    });
+  
+    // Effect to set gobalDiscount when it changes, avoiding rerenders
+    useEffect(() => {
+      if (gobalDiscount && Object.keys(gobalDiscount).length !== 0) {
+        setDiscounts(gobalDiscount);
+      }
+    }, [gobalDiscount]);
+  
+    // Handle discount input change for estate
+    const handleEstateDiscountChange = (e) => {
+      setDiscounts((prevState) => ({
+        ...prevState,
+        estateDiscount: {
+          ...prevState.estateDiscount,
+          value: e.target.value,
+        },
+      }));
+    };
+  
+    const handleEstateDiscountTypeChange = (e) => {
+      setDiscounts((prevState) => ({
+        ...prevState,
+        estateDiscount: {
+          ...prevState.estateDiscount,
+          type: e.target.value,
+        },
+      }));
+    };
+  
+    // Handle discount input change for amenities
+    const handleAmenityDiscountChange = (amenityId, value, type) => {
+      setDiscounts((prevState) => ({
+        ...prevState,
+        amenitiesDiscounts: {
+          ...prevState.amenitiesDiscounts,
+          [amenityId]: { value, type },
+        },
+      }));
+    };
+  
+    // Handle discount input change for utilities
+    const handleUtilityDiscountChange = (utilityId, value, type) => {
+      setDiscounts((prevState) => ({
+        ...prevState,
+        utilitiesDiscounts: {
+          ...prevState.utilitiesDiscounts,
+          [utilityId]: { value, type },
+        },
+      }));
+    };
+  
+    const applyDiscount = () => {
+      setGobalDiscount(discounts);
+    };
+  
+    const [finalTotalPrice, setFinalTotalPrice] = useState(0);
+  
+    return (
+      <div className="w-[50%] mr-3 flex flex-col h-full gap-3">
+        <div className="w-full bg-[#F8F9FB] h-[calc(100%-40px)] rounded-[4px] p-4 ">
+          <p className="text-[14px] font-semibold mb-2">UNIT PRICE DETAIL</p>
+  
+          <div className="w-full flex flex-col  h-[440px] overflow-y-auto hideScroll ">
+            <>
+              <p className="w-full text-[14px] text-[#4E5A6B] flex justify-between mb-2">
+                {cards[index].estate.name}{" "}
+                <span className="font-semibold">
+                  ${cards[index].estate.avg_price}
+                </span>
+              </p>
+  
+              <div className="w-full  flex items-center justify-between ">
+                <p className=" text-[12px] font-thin text-[#98A0AC] ">
+                  Discount{" "}
+                </p>
+                <div className="font-semibold w-[120px] h-[25px] rounded-[4px] flex justify-center items-center">
+                  <input
+                    type="text"
+                    placeholder="Eg . 10"
+                    value={discounts.estateDiscount.value}
+                    onChange={(e) => {
+                      updateDiscount(index, e.target.value);
+                      handleEstateDiscountChange(e);
+                    }}
+                    className="w-[50%] pl-2 h-full rounded-l-[4px] border  text-[13px] text-[#adadae] border-[#E4E8EE] bg-[#FFFFFF] focus:outline-none focus:border-transparent"
+                  />
+                  <select
+                    value={discounts.estateDiscount.type}
+                    onChange={(e) => {
+                      updateDiscountType(index, e.target.value);
+                      handleEstateDiscountTypeChange(e);
+                    }}
+                    className="w-[50%] pl-1 h-full  rounded-r-[4px] border border-t-[#E4E8EE] border-b-[#E4E8EE] border-l-[#E4E8EE] bg-[#FFFFFF]"
+                  >
+                    <option value="AED">AED</option>
+                    <option value="%">%</option>
+                  </select>
+                </div>{" "}
+              </div>
+  
+              <div className="divider my-2"></div>
+            </>
+  
+            {fullAmenitiesDetails.map((amenity) => (
+              <React.Fragment key={amenity.id}>
+                <p className="w-full text-[14px] text-[#4E5A6B] flex justify-between mb-2 ">
+                  {amenity.name}{" "}
+                  <span className="font-semibold">$ {amenity.price}</span>{" "}
+                </p>
+  
+                <div className="w-full flex items-center justify-between ">
+                  <p className="text-[12px] font-thin text-[#98A0AC]">Discount</p>
+                  <div className="font-semibold w-[120px] h-[25px] rounded-[4px] flex justify-center items-center">
+                    <input
+                      type="text"
+                      placeholder="Eg . 10"
+                      className="w-[50%] pl-2 h-full rounded-l-[4px] border text-[12px] text-[#adadae] border-[#E4E8EE] bg-[#FFFFFF] focus:outline-none focus:border-transparent"
+                      value={
+                        discounts.amenitiesDiscounts[amenity.id]?.value ||
+                        SelectedamenitiesList.find(
+                          (item) => item.estateId === selectedCard
+                        )?.amenities.find((a) => a.id === amenity.id)?.discount ||
+                        ""
+                      }
+                      onChange={(e) => {
+                        setAmenitiesDiscount(
+                          selectedCard,
+                          amenity.id,
+                          e.target.value, // New discount value
+                          SelectedamenitiesList.find(
+                            (item) => item.estateId === selectedCard
+                          )?.amenities.find((a) => a.id === amenity.id)
+                            ?.discountType || ""
+                        );
+                        handleAmenityDiscountChange(
+                          amenity.id,
+                          e.target.value,
+                          discounts.amenitiesDiscounts[amenity.id]?.type || "AED"
+                        );
+                      }}
+                    />
+                    <select
+                      className="w-[50%] pl-1 h-full rounded-r-[4px] border border-t-[#E4E8EE] border-b-[#E4E8EE] border-l-[#E4E8EE] bg-[#FFFFFF]"
+                      value={
+                        discounts.amenitiesDiscounts[amenity.id]?.type ||
+                        SelectedamenitiesList.find(
+                          (item) => item.estateId === selectedCard
+                        )?.amenities.find((a) => a.id === amenity.id)
+                          ?.discountType || ""
+                      }
+                      onChange={(e) => {
+                        setAmenitiesDiscount(
+                          selectedCard,
+                          amenity.id,
+                          SelectedamenitiesList.find(
+                            (item) => item.estateId === selectedCard
+                          )?.amenities.find((a) => a.id === amenity.id)
+                            ?.discount || 0, // Existing discount value
+                          e.target.value // New discount type value
+                        );
+                        handleAmenityDiscountChange(
+                          amenity.id,
+                          discounts.amenitiesDiscounts[amenity.id]?.value || "",
+                          e.target.value
+                        );
+                      }}
+                    >
+                      <option value="AED">AED</option>
+                      <option value="%">%</option>
+                    </select>
+                  </div>
+                </div>
+              </React.Fragment>
+            ))}
+  
+            <div className="divider my-2"></div>
+  
+            {fullUtilitiesDetails.map((utility) => (
+              <React.Fragment key={utility.id}>
+                <p className="w-full text-[14px] text-[#4E5A6B] flex justify-between mb-2 ">
+                  {utility.name}{" "}
+                  <span className="font-semibold">$ {utility.price}</span>
+                </p>
+  
+                <div className="w-full flex items-center justify-between ">
+                  <p className="text-[12px] font-thin text-[#98A0AC]">
+                    Discount
+                  </p>
+                  <div className="font-semibold w-[120px] h-[25px] rounded-[4px] flex justify-center items-center">
+                    <input
+                      type="text"
+                      placeholder="Eg . 10"
+                      className="w-[50%] pl-2 h-full rounded-l-[4px] border text-[12px] text-[#adadae] border-[#E4E8EE] bg-[#FFFFFF] focus:outline-none focus:border-transparent"
+                      value={
+                        discounts.utilitiesDiscounts[utility.id]?.value ||
+                        SelectedutilitiesList.find(
+                          (item) => item.estateId === selectedCard
+                        )?.utilities.find((u) => u.id === utility.id)?.discount ||
+                        ""
+                      }
+                      onChange={(e) => {
+                        setAmenitiesDiscount(
+                          selectedCard,
+                          utility.id,
+                          e.target.value, // New discount value
+                          SelectedutilitiesList.find(
+                            (item) => item.estateId === selectedCard
+                          )?.utilities.find((u) => u.id === utility.id)
+                            ?.discountType || ""
+                        );
+                        handleUtilityDiscountChange(
+                          utility.id,
+                          e.target.value,
+                          discounts.utilitiesDiscounts[utility.id]?.type || "AED"
+                        );
+                      }}
+                    />
+                    <select
+                      className="w-[50%] pl-1 h-full rounded-r-[4px] border border-t-[#E4E8EE] border-b-[#E4E8EE] border-l-[#E4E8EE] bg-[#FFFFFF]"
+                      value={
+                        discounts.utilitiesDiscounts[utility.id]?.type ||
+                        SelectedutilitiesList.find(
+                          (item) => item.estateId === selectedCard
+                        )?.utilities.find((u) => u.id === utility.id)
+                          ?.discountType || ""
+                      }
+                      onChange={(e) => {
+                        setAmenitiesDiscount(
+                          selectedCard,
+                          utility.id,
+                          SelectedutilitiesList.find(
+                            (item) => item.estateId === selectedCard
+                          )?.utilities.find((u) => u.id === utility.id)
+                            ?.discount || 0, // Existing discount value
+                          e.target.value // New discount type value
+                        );
+                        handleUtilityDiscountChange(
+                          utility.id,
+                          discounts.utilitiesDiscounts[utility.id]?.value || "",
+                          e.target.value
+                        );
+                      }}
+                    >
+                      <option value="AED">AED</option>
+                      <option value="%">%</option>
+                    </select>
+                  </div>
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+  
+        <div className="w-full bg-[#F8F9FB] h-[40px] flex justify-between items-center px-4 rounded-[4px] ">
+          <p className="font-semibold text-[#4E5A6B] ">TOTAL:</p>
+          <p className="font-semibold text-[#FF3F00] text-[16px] ">{finalTotalPrice} AED</p>
+        </div>
+  
+        <button
+          onClick={applyDiscount}
+          className="bg-blue-500 text-white w-full py-2 rounded-lg"
+        >
+          Apply Discounts
+        </button>
+      </div>
+    );
+  }
+  
+  export default Discount;
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   import { create } from "zustand";
 import axios from "axios";
 

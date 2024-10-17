@@ -3,7 +3,7 @@ import React from "react";
 import usePopupStore from "../../../../zustand/popupStore";
 
 function Primary() {
-  const { selectedType } = usePopupStore(); // Fetching the value from Zustand store
+  const { selectedType,resetSelectedType } = usePopupStore(); // Fetching the value from Zustand store
 
   return (
     <div className="w-full h-full  flex flex-col justify-between">
@@ -453,7 +453,7 @@ function Primary() {
 
       <div className="w-full flex justify-between items-center px-2">
         {" "}
-        <button className="border h-[42px] w-[80px] rounded-[4px]">
+        <button onClick={()=>resetSelectedType()} className="border h-[42px] w-[80px] rounded-[4px]">
           Back
         </button>{" "}
         <button className="text-white font-semibold h-[42px] w-[215px] rounded-[4px] bg-[#5078E1]">

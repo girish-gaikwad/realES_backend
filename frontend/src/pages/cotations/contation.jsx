@@ -9,16 +9,17 @@ import Card from "../../components/card";
 import usePopupStore from "../../zustand/popupStore";
 
 function Cotation() {
-  const{discount_on_cards,creatediscountarray,cards,fetchCards,userDetails,fetchUserDetails,selectedCard,SelectedamenitiesList,SelectedutilitiesList} = usePopupStore();
+  const{totalPrice, totalDiscount,discount_on_cards,creatediscountarray,cards,fetchCards,userDetails,fetchUserDetails,selectedCard,SelectedamenitiesList,SelectedutilitiesList} = usePopupStore();
 
+  let roundedDiscount = Math.round((totalDiscount / 650) * 100) + "%";
 
   useEffect(() => {
   fetchUserDetails();
   fetchCards();  
   creatediscountarray();
-  calculateTotalPrice();
-  calcuateTotalDiscount()
-  }, [cards]);
+  // calculateTotalPrice();
+  // calcuateTotalDiscount()
+  }, []);
 
 function formatDate(dateString) {
   const date = new Date(dateString);  
@@ -30,58 +31,57 @@ function formatDate(dateString) {
 }
 
 
-const [totalPrice, setTotalPrice] = useState(0);
-const [totalDiscount, setTotalDiscount] = useState(0);
+// const [totalPrice, setTotalPrice] = useState(0);
+// const [totalDiscount, setTotalDiscount] = useState(0);
 
 const selectedAmenitiesids = SelectedamenitiesList[0]?.amenities;
 const selectedUtilitiesids = SelectedutilitiesList?.[0]?.utilities ;
 
 // console.log("discount_on_cards",discount_on_cards);
+// const calculateTotalPrice = () => {
+//   let total = 0;
+//   // Add average price of all estates
+//   cards.forEach((card) => {
+//     total += card?.estate?.avg_price;
+//   });
 
-const calculateTotalPrice = () => {
-  let total = 0;
-  // Add average price of all estates
-  cards.forEach((card) => {
-    total += card?.estate?.avg_price;
-  });
+//   // Get selected amenities details
+//   const fullAmenitiesDetails = cards.flatMap((card) =>
+//     card.estate?.owner_amenities?.filter((amenity) =>
+//       selectedAmenitiesids?.some((selectedAmenity) => selectedAmenity?.id === amenity?.id)
+//     )
+//   );
 
-  // Get selected amenities details
-  const fullAmenitiesDetails = cards.flatMap((card) =>
-    card.estate?.owner_amenities?.filter((amenity) =>
-      selectedAmenitiesids?.some((selectedAmenity) => selectedAmenity?.id === amenity?.id)
-    )
-  );
-
-  // Add prices of selected amenities
-  fullAmenitiesDetails.forEach((amenity) => {
-    total += amenity?.price;
-  });
+//   // Add prices of selected amenities
+//   fullAmenitiesDetails.forEach((amenity) => {
+//     total += amenity?.price;
+//   });
 
 
-  // Get selected utilities details
-  const fullUtilitiesDetails = cards.flatMap((card) =>
-    card.estate?.owner_utilities?.filter((utility) =>
-      selectedUtilitiesids?.some((selectedUtility) => selectedUtility?.id === utility?.id)
-    )
-  );
+//   // Get selected utilities details
+//   const fullUtilitiesDetails = cards.flatMap((card) =>
+//     card.estate?.owner_utilities?.filter((utility) =>
+//       selectedUtilitiesids?.some((selectedUtility) => selectedUtility?.id === utility?.id)
+//     )
+//   );
 
-  // Add prices of selected utilities
-  fullUtilitiesDetails.forEach((utility) => {
-    total += utility?.price;
-  });
+//   // Add prices of selected utilities
+//   fullUtilitiesDetails.forEach((utility) => {
+//     total += utility?.price;
+//   });
 
-  // Set total price
-  setTotalPrice(total);
-};
+//   // Set total price
+//   setTotalPrice(total);
+// };
 
-const calcuateTotalDiscount = () => {
-  let total = 0;
+// const calcuateTotalDiscount = () => {
+//   let total = 0;
 
-  discount_on_cards.forEach((card) => {
-    total += card.discount;
-  });
-  setTotalDiscount(total);
-  }
+//   discount_on_cards.forEach((card) => {
+//     total += card.discount;
+//   });
+//   setTotalDiscount(total);
+//   }
 
 
   return (
@@ -363,10 +363,10 @@ const calcuateTotalDiscount = () => {
                           Total Discount
                         </td>
                         <td className="border-[#e4e8ee] border-b  text-[#4E5A6B] text-[14px] ">
-                          {totalDiscount}
+                          {roundedDiscount} 
                         </td>
                         <td className="border-[#e4e8ee] border-b  text-[#091B29] font-semibold text-end text-[14px]">
-                          -$100.00
+                          - $ {totalDiscount/0.02}
                         </td>
                       </tr>
 
@@ -414,7 +414,7 @@ const calcuateTotalDiscount = () => {
                       </th>
                       <th></th>
                       <th className=" text-[14px] text-[#091B29] font-semibold text-end">
-                        $4,148.00
+                        $ {totalPrice-totalDiscount/0.2}
                       </th>
                       {/* </tr> */}
                     </thead>
